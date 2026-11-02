@@ -2,26 +2,27 @@ import streamlit as st
 import nltk
 from nltk.corpus import wordnet
 
-# -----------------------------
+# =========================================================
 # DOWNLOAD REQUIRED NLTK DATA
-# -----------------------------
+# =========================================================
 nltk.download("wordnet", quiet=True)
+nltk.download("omw-1.4", quiet=True)
 nltk.download("punkt", quiet=True)
 nltk.download("punkt_tab", quiet=True)
 nltk.download("averaged_perceptron_tagger_eng", quiet=True)
 
-# -----------------------------
+# =========================================================
 # PAGE CONFIG
-# -----------------------------
+# =========================================================
 st.set_page_config(
     page_title="LexiScope - NLP Explorer",
     page_icon="📘",
     layout="wide"
 )
 
-# -----------------------------
+# =========================================================
 # CUSTOM CSS
-# -----------------------------
+# =========================================================
 st.markdown("""
 <style>
 
@@ -54,9 +55,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
 # =========================================================
-# FUNCTIONS
+# WORDNET FUNCTIONS
 # =========================================================
 
 def get_synsets(word):
@@ -78,7 +78,6 @@ def get_examples(word):
 
     for syn in wordnet.synsets(word):
         for example in syn.examples():
-
             if example:
                 examples.append(example)
 
@@ -89,9 +88,7 @@ def get_synonyms(word):
     synonyms = set()
 
     for syn in wordnet.synsets(word):
-
         for lemma in syn.lemmas():
-
             synonyms.add(
                 lemma.name().replace("_", " ")
             )
@@ -103,11 +100,9 @@ def get_antonyms(word):
     antonyms = set()
 
     for syn in wordnet.synsets(word):
-
         for lemma in syn.lemmas():
 
             for antonym in lemma.antonyms():
-
                 antonyms.add(
                     antonym.name().replace("_", " ")
                 )
@@ -123,7 +118,6 @@ def get_hypernyms(word):
         for hypernym in syn.hypernyms():
 
             for lemma in hypernym.lemmas():
-
                 hypernyms.add(
                     lemma.name().replace("_", " ")
                 )
@@ -139,7 +133,6 @@ def get_hyponyms(word):
         for hyponym in syn.hyponyms():
 
             for lemma in hyponym.lemmas():
-
                 hyponyms.add(
                     lemma.name().replace("_", " ")
                 )
@@ -173,6 +166,10 @@ def get_meanings(word):
     return meanings
 
 
+# =========================================================
+# SIMILARITY
+# =========================================================
+
 def calculate_similarity(word1, word2):
 
     synsets1 = wordnet.synsets(word1)
@@ -190,7 +187,6 @@ def calculate_similarity(word1, word2):
             similarity = syn1.wup_similarity(syn2)
 
             if similarity is not None:
-
                 best_similarity = max(
                     best_similarity,
                     similarity
@@ -200,7 +196,7 @@ def calculate_similarity(word1, word2):
 
 
 # =========================================================
-# POS DETAILS
+# POS TAG DETAILS
 # =========================================================
 
 pos_meanings = {
@@ -279,7 +275,7 @@ pos_meanings = {
 
     "NNS": {
         "name": "Plural Noun",
-        "explanation": "Ek se zyada persons, places ya things ko show karta hai.",
+        "explanation": "Ek se zyada persons, places ya things.",
         "example": "books, cars, students"
     },
 
@@ -321,13 +317,13 @@ pos_meanings = {
 
     "RB": {
         "name": "Adverb",
-        "explanation": "Verb, adjective ya kisi aur adverb ko describe karta hai.",
+        "explanation": "Verb, adjective ya dusre adverb ko describe karta hai.",
         "example": "quickly, very, slowly"
     },
 
     "RBR": {
         "name": "Comparative Adverb",
-        "explanation": "Do actions ya qualities ko compare karta hai.",
+        "explanation": "Actions ko compare karta hai.",
         "example": "faster, better"
     },
 
@@ -424,6 +420,111 @@ pos_meanings = {
 
 
 # =========================================================
+# CONVERT NLTK POS TO WORDNET POS
+# =========================================================
+
+def get_wordnet_pos(tag):
+
+    if tag.startswith("J"):
+        return wordnet.ADJ
+
+    elif tag.startswith("V"):
+        return wordnet.VERB
+
+    elif tag.startswith("N"):
+        return wordnet.NOUN
+
+    elif tag.startswith("R"):
+        return wordnet.ADV
+
+    else:
+        return None
+
+
+# =========================================================
+# WORDNET DETAILS BASED ON POS
+# =========================================================
+
+def get_wordnet_details(word, tag):
+
+    wn_pos = get_wordnet_pos(tag)
+
+    if wn_pos is None:
+        return None
+
+    synsets = wordnet.synsets(
+        word,
+        pos=wn_pos
+    )
+
+    if not synsets:
+        return None
+
+    definitions = []
+    examples = []
+    synonyms = set()
+    antonyms = set()
+    hypernyms = set()
+    hyponyms = set()
+
+    for syn in synsets:
+
+        if syn.definition():
+            definitions.append(
+                syn.definition()
+            )
+
+        for example in syn.examples():
+            examples.append(example)
+
+        for lemma in syn.lemmas():
+
+            synonyms.add(
+                lemma.name().replace("_", " ")
+            )
+
+            for antonym in lemma.antonyms():
+                antonyms.add(
+                    antonym.name().replace("_", " ")
+                )
+
+        for hypernym in syn.hypernyms():
+
+            for lemma in hypernym.lemmas():
+                hypernyms.add(
+                    lemma.name().replace("_", " ")
+                )
+
+        for hyponym in syn.hyponyms():
+
+            for lemma in hyponym.lemmas():
+                hyponyms.add(
+                    lemma.name().replace("_", " ")
+                )
+
+    return {
+
+        "definitions":
+            list(dict.fromkeys(definitions)),
+
+        "examples":
+            list(dict.fromkeys(examples)),
+
+        "synonyms":
+            sorted(synonyms),
+
+        "antonyms":
+            sorted(antonyms),
+
+        "hypernyms":
+            sorted(hypernyms),
+
+        "hyponyms":
+            sorted(hyponyms)
+    }
+
+
+# =========================================================
 # SIDEBAR
 # =========================================================
 
@@ -447,7 +548,7 @@ with st.sidebar:
     st.write("⬇️ Hyponyms")
     st.write("🧠 Meanings")
     st.write("✂️ Tokenization")
-    st.write("🏷️ Detailed Parts of Speech")
+    st.write("🏷️ POS + WordNet Analysis")
     st.write("⚖️ Word Similarity")
 
 
@@ -463,7 +564,7 @@ st.markdown(
 st.markdown(
     """
     <div class="subtitle">
-    Explore words and perform basic NLP analysis using NLTK and WordNet
+    Explore English words and perform NLP analysis using NLTK and WordNet
     </div>
     """,
     unsafe_allow_html=True
@@ -477,7 +578,7 @@ st.markdown(
 main_tabs = st.tabs([
     "📖 WordNet Explorer",
     "✂️ Tokenization",
-    "🏷️ Parts of Speech",
+    "🏷️ POS + WordNet",
     "⚖️ Similarity Comparison"
 ])
 
@@ -560,7 +661,6 @@ with main_tabs[0]:
             with word_tabs[0]:
 
                 if definitions:
-
                     st.subheader("Primary Definition")
                     st.info(definitions[0])
 
@@ -574,7 +674,6 @@ with main_tabs[0]:
                         st.write(
                             ", ".join(synonyms[:10])
                         )
-
                     else:
                         st.write("No synonyms found.")
 
@@ -586,7 +685,6 @@ with main_tabs[0]:
                         st.write(
                             ", ".join(antonyms[:10])
                         )
-
                     else:
                         st.write("No antonyms found.")
 
@@ -612,6 +710,7 @@ with main_tabs[0]:
                             st.write(definition)
 
                 else:
+
                     st.warning(
                         "No definitions found."
                     )
@@ -789,9 +888,7 @@ with main_tabs[1]:
                 sentence
             )
 
-            st.subheader(
-                "Tokens"
-            )
+            st.subheader("Tokens")
 
             st.write(tokens)
 
@@ -808,26 +905,27 @@ with main_tabs[1]:
 
 
 # =========================================================
-# TAB 3 - DETAILED PARTS OF SPEECH
+# TAB 3 - POS + WORDNET ANALYSIS
 # =========================================================
 
 with main_tabs[2]:
 
     st.header(
-        "🏷️ Detailed Parts of Speech Analysis"
+        "🏷️ Parts of Speech + WordNet Analysis"
     )
 
     st.write(
-        "Enter a sentence to identify and explain the part of speech of every word."
+        "Enter a sentence to identify each word's part of speech "
+        "and explore its related WordNet information."
     )
 
     pos_sentence = st.text_area(
-        "Enter a sentence for POS tagging:",
-        placeholder="Example: Ali is reading a beautiful book."
+        "Enter a sentence:",
+        placeholder="Example: The beautiful girl reads a book."
     )
 
     if st.button(
-        "Analyze Parts of Speech",
+        "Analyze Sentence",
         key="pos_button"
     ):
 
@@ -842,7 +940,7 @@ with main_tabs[2]:
             )
 
             st.subheader(
-                "Detailed POS Analysis"
+                "Detailed POS + WordNet Analysis"
             )
 
             for word_item, tag in tags:
@@ -851,44 +949,46 @@ with main_tabs[2]:
                     tag
                 )
 
-                with st.container(
-                    border=True
+                wordnet_details = get_wordnet_details(
+                    word_item.lower(),
+                    tag
+                )
+
+                with st.expander(
+                    f"{word_item} | {tag}",
+                    expanded=False
                 ):
 
+                    # POS DETAILS
                     st.markdown(
-                        f"### {word_item}"
+                        "### 🏷️ Part of Speech"
                     )
 
-                    col1, col2 = st.columns(2)
+                    st.write(
+                        "**Word:**",
+                        word_item
+                    )
 
-                    with col1:
-
-                        st.write(
-                            "**POS Tag:**",
-                            tag
-                        )
-
-                        if information:
-
-                            st.write(
-                                "**Part of Speech:**",
-                                information["name"]
-                            )
-
-                    with col2:
-
-                        if information:
-
-                            st.write(
-                                "**Example:**",
-                                information["example"]
-                            )
+                    st.write(
+                        "**POS Tag:**",
+                        tag
+                    )
 
                     if information:
 
                         st.write(
+                            "**Part of Speech:**",
+                            information["name"]
+                        )
+
+                        st.write(
                             "**Explanation:**",
                             information["explanation"]
+                        )
+
+                        st.write(
+                            "**General Example:**",
+                            information["example"]
                         )
 
                     else:
@@ -898,13 +998,157 @@ with main_tabs[2]:
                             "Punctuation / Special Symbol"
                         )
 
+                    # WORDNET DETAILS
+                    if wordnet_details:
 
-            # ---------------------------------
+                        st.divider()
+
+                        st.markdown(
+                            "### 📘 WordNet Details"
+                        )
+
+                        # Definitions
+                        st.markdown(
+                            "#### Definitions"
+                        )
+
+                        if wordnet_details["definitions"]:
+
+                            for definition in wordnet_details["definitions"]:
+
+                                st.write(
+                                    "•",
+                                    definition
+                                )
+
+                        else:
+
+                            st.write(
+                                "No definitions found."
+                            )
+
+
+                        # Synonyms
+                        st.markdown(
+                            "#### Synonyms"
+                        )
+
+                        if wordnet_details["synonyms"]:
+
+                            st.write(
+                                ", ".join(
+                                    wordnet_details["synonyms"]
+                                )
+                            )
+
+                        else:
+
+                            st.write(
+                                "No synonyms found."
+                            )
+
+
+                        # Antonyms
+                        st.markdown(
+                            "#### Antonyms"
+                        )
+
+                        if wordnet_details["antonyms"]:
+
+                            st.write(
+                                ", ".join(
+                                    wordnet_details["antonyms"]
+                                )
+                            )
+
+                        else:
+
+                            st.write(
+                                "No antonyms found."
+                            )
+
+
+                        # Hypernyms
+                        st.markdown(
+                            "#### Hypernyms"
+                        )
+
+                        st.caption(
+                            "Broader categories"
+                        )
+
+                        if wordnet_details["hypernyms"]:
+
+                            st.write(
+                                ", ".join(
+                                    wordnet_details["hypernyms"]
+                                )
+                            )
+
+                        else:
+
+                            st.write(
+                                "No hypernyms found."
+                            )
+
+
+                        # Hyponyms
+                        st.markdown(
+                            "#### Hyponyms"
+                        )
+
+                        st.caption(
+                            "More specific categories"
+                        )
+
+                        if wordnet_details["hyponyms"]:
+
+                            st.write(
+                                ", ".join(
+                                    wordnet_details["hyponyms"]
+                                )
+                            )
+
+                        else:
+
+                            st.write(
+                                "No hyponyms found."
+                            )
+
+
+                        # Examples
+                        st.markdown(
+                            "#### Examples"
+                        )
+
+                        if wordnet_details["examples"]:
+
+                            for example in wordnet_details["examples"]:
+
+                                st.write(
+                                    "•",
+                                    example
+                                )
+
+                        else:
+
+                            st.write(
+                                "No examples available."
+                            )
+
+                    else:
+
+                        st.divider()
+
+                        st.info(
+                            "No WordNet information is available "
+                            "for this word with this part of speech."
+                        )
+
+
             # SUMMARY TABLE
-            # ---------------------------------
-
             st.subheader(
-                "POS Summary"
+                "📊 POS Summary"
             )
 
             table_data = []
@@ -916,17 +1160,18 @@ with main_tabs[2]:
                 )
 
                 if information:
-
-                    name = information["name"]
+                    pos_name = information["name"]
 
                 else:
-
-                    name = "Punctuation / Symbol"
+                    pos_name = "Punctuation / Symbol"
 
                 table_data.append({
+
                     "Word": word_item,
+
                     "POS Tag": tag,
-                    "Part of Speech": name
+
+                    "Part of Speech": pos_name
                 })
 
             st.dataframe(
@@ -952,7 +1197,8 @@ with main_tabs[3]:
     )
 
     st.write(
-        "Compare the semantic similarity of two words using WordNet Wu-Palmer Similarity."
+        "Compare the semantic similarity of two words using "
+        "WordNet Wu-Palmer Similarity."
     )
 
     col1, col2 = st.columns(2)
@@ -994,9 +1240,7 @@ with main_tabs[3]:
 
             else:
 
-                percentage = (
-                    similarity * 100
-                )
+                percentage = similarity * 100
 
                 st.metric(
                     "Similarity Score",
