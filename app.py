@@ -54,9 +54,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# -----------------------------
+
+# =========================================================
 # FUNCTIONS
-# -----------------------------
+# =========================================================
+
 def get_synsets(word):
     return wordnet.synsets(word)
 
@@ -76,6 +78,7 @@ def get_examples(word):
 
     for syn in wordnet.synsets(word):
         for example in syn.examples():
+
             if example:
                 examples.append(example)
 
@@ -86,7 +89,9 @@ def get_synonyms(word):
     synonyms = set()
 
     for syn in wordnet.synsets(word):
+
         for lemma in syn.lemmas():
+
             synonyms.add(
                 lemma.name().replace("_", " ")
             )
@@ -98,8 +103,11 @@ def get_antonyms(word):
     antonyms = set()
 
     for syn in wordnet.synsets(word):
+
         for lemma in syn.lemmas():
+
             for antonym in lemma.antonyms():
+
                 antonyms.add(
                     antonym.name().replace("_", " ")
                 )
@@ -111,8 +119,11 @@ def get_hypernyms(word):
     hypernyms = set()
 
     for syn in wordnet.synsets(word):
+
         for hypernym in syn.hypernyms():
+
             for lemma in hypernym.lemmas():
+
                 hypernyms.add(
                     lemma.name().replace("_", " ")
                 )
@@ -124,8 +135,11 @@ def get_hyponyms(word):
     hyponyms = set()
 
     for syn in wordnet.synsets(word):
+
         for hyponym in syn.hyponyms():
+
             for lemma in hyponym.lemmas():
+
                 hyponyms.add(
                     lemma.name().replace("_", " ")
                 )
@@ -134,7 +148,6 @@ def get_hyponyms(word):
 
 
 def get_meanings(word):
-
     meanings = []
 
     pos_names = {
@@ -150,7 +163,8 @@ def get_meanings(word):
         meanings.append({
             "synset": syn.name(),
             "part_of_speech": pos_names.get(
-                syn.pos(), syn.pos()
+                syn.pos(),
+                syn.pos()
             ),
             "definition": syn.definition(),
             "examples": syn.examples()
@@ -170,11 +184,13 @@ def calculate_similarity(word1, word2):
     best_similarity = 0
 
     for syn1 in synsets1:
+
         for syn2 in synsets2:
 
             similarity = syn1.wup_similarity(syn2)
 
             if similarity is not None:
+
                 best_similarity = max(
                     best_similarity,
                     similarity
@@ -183,52 +199,234 @@ def calculate_similarity(word1, word2):
     return best_similarity
 
 
-# -----------------------------
-# POS TAG MEANINGS
-# -----------------------------
+# =========================================================
+# POS DETAILS
+# =========================================================
+
 pos_meanings = {
-    "CC": "Coordinating conjunction",
-    "CD": "Cardinal number",
-    "DT": "Determiner",
-    "EX": "Existential there",
-    "FW": "Foreign word",
-    "IN": "Preposition or subordinating conjunction",
-    "JJ": "Adjective",
-    "JJR": "Comparative adjective",
-    "JJS": "Superlative adjective",
-    "LS": "List item marker",
-    "MD": "Modal verb",
-    "NN": "Singular noun",
-    "NNS": "Plural noun",
-    "NNP": "Singular proper noun",
-    "NNPS": "Plural proper noun",
-    "PDT": "Predeterminer",
-    "POS": "Possessive ending",
-    "PRP": "Personal pronoun",
-    "PRP$": "Possessive pronoun",
-    "RB": "Adverb",
-    "RBR": "Comparative adverb",
-    "RBS": "Superlative adverb",
-    "RP": "Particle",
-    "SYM": "Symbol",
-    "TO": "To",
-    "UH": "Interjection",
-    "VB": "Verb, base form",
-    "VBD": "Verb, past tense",
-    "VBG": "Verb, gerund or present participle",
-    "VBN": "Verb, past participle",
-    "VBP": "Verb, present tense",
-    "VBZ": "Verb, 3rd person singular present",
-    "WDT": "Wh-determiner",
-    "WP": "Wh-pronoun",
-    "WP$": "Possessive wh-pronoun",
-    "WRB": "Wh-adverb"
+
+    "CC": {
+        "name": "Coordinating Conjunction",
+        "explanation": "Words ya phrases ko join karta hai.",
+        "example": "and, but, or"
+    },
+
+    "CD": {
+        "name": "Cardinal Number",
+        "explanation": "Number ya quantity show karta hai.",
+        "example": "1, 20, hundred"
+    },
+
+    "DT": {
+        "name": "Determiner",
+        "explanation": "Noun se pehle aata hai aur noun ko specify karta hai.",
+        "example": "a, an, the, this"
+    },
+
+    "EX": {
+        "name": "Existential There",
+        "explanation": "Kisi cheez ke existence ko show karta hai.",
+        "example": "There is a book."
+    },
+
+    "FW": {
+        "name": "Foreign Word",
+        "explanation": "English ke ilawa kisi aur language ka word.",
+        "example": "bonjour"
+    },
+
+    "IN": {
+        "name": "Preposition / Subordinating Conjunction",
+        "explanation": "Words ke darmiyan relationship show karta hai.",
+        "example": "in, on, at, because"
+    },
+
+    "JJ": {
+        "name": "Adjective",
+        "explanation": "Noun ki quality ya characteristic describe karta hai.",
+        "example": "beautiful, smart, large"
+    },
+
+    "JJR": {
+        "name": "Comparative Adjective",
+        "explanation": "Do cheezon ko compare karta hai.",
+        "example": "bigger, faster, better"
+    },
+
+    "JJS": {
+        "name": "Superlative Adjective",
+        "explanation": "Highest degree of comparison show karta hai.",
+        "example": "biggest, fastest, best"
+    },
+
+    "LS": {
+        "name": "List Item Marker",
+        "explanation": "List ke items ko indicate karta hai.",
+        "example": "1., 2., A."
+    },
+
+    "MD": {
+        "name": "Modal Verb",
+        "explanation": "Ability, possibility, permission ya obligation show karta hai.",
+        "example": "can, may, should, must"
+    },
+
+    "NN": {
+        "name": "Singular Noun",
+        "explanation": "Ek person, place, thing ya idea ka naam.",
+        "example": "book, car, student"
+    },
+
+    "NNS": {
+        "name": "Plural Noun",
+        "explanation": "Ek se zyada persons, places ya things ko show karta hai.",
+        "example": "books, cars, students"
+    },
+
+    "NNP": {
+        "name": "Proper Noun",
+        "explanation": "Kisi specific person, place ya organization ka naam.",
+        "example": "Ali, Lahore, Google"
+    },
+
+    "NNPS": {
+        "name": "Plural Proper Noun",
+        "explanation": "Proper noun ka plural form.",
+        "example": "Americans, Smiths"
+    },
+
+    "PDT": {
+        "name": "Predeterminer",
+        "explanation": "Determiner se pehle use hota hai.",
+        "example": "all, both, half"
+    },
+
+    "POS": {
+        "name": "Possessive Ending",
+        "explanation": "Ownership show karta hai.",
+        "example": "Ali's book"
+    },
+
+    "PRP": {
+        "name": "Personal Pronoun",
+        "explanation": "Noun ki jagah use hota hai.",
+        "example": "I, you, he, she, they"
+    },
+
+    "PRP$": {
+        "name": "Possessive Pronoun",
+        "explanation": "Ownership show karta hai.",
+        "example": "my, your, his, their"
+    },
+
+    "RB": {
+        "name": "Adverb",
+        "explanation": "Verb, adjective ya kisi aur adverb ko describe karta hai.",
+        "example": "quickly, very, slowly"
+    },
+
+    "RBR": {
+        "name": "Comparative Adverb",
+        "explanation": "Do actions ya qualities ko compare karta hai.",
+        "example": "faster, better"
+    },
+
+    "RBS": {
+        "name": "Superlative Adverb",
+        "explanation": "Highest degree of an action show karta hai.",
+        "example": "fastest, best"
+    },
+
+    "RP": {
+        "name": "Particle",
+        "explanation": "Verb ke saath mil kar phrasal verb banata hai.",
+        "example": "give up, turn off"
+    },
+
+    "SYM": {
+        "name": "Symbol",
+        "explanation": "Special ya mathematical symbol.",
+        "example": "+, %, ="
+    },
+
+    "TO": {
+        "name": "To",
+        "explanation": "Infinitive ya direction ke liye use hota hai.",
+        "example": "to go, to school"
+    },
+
+    "UH": {
+        "name": "Interjection",
+        "explanation": "Emotion ya reaction express karta hai.",
+        "example": "wow, oh, hey"
+    },
+
+    "VB": {
+        "name": "Verb - Base Form",
+        "explanation": "Verb ki basic form hoti hai.",
+        "example": "go, eat, write"
+    },
+
+    "VBD": {
+        "name": "Verb - Past Tense",
+        "explanation": "Past mein hone wale action ko show karta hai.",
+        "example": "went, ate, played"
+    },
+
+    "VBG": {
+        "name": "Verb - Gerund / Present Participle",
+        "explanation": "Usually verb ki -ing form hoti hai.",
+        "example": "reading, playing, running"
+    },
+
+    "VBN": {
+        "name": "Verb - Past Participle",
+        "explanation": "Perfect tense ya passive voice mein use hota hai.",
+        "example": "written, eaten, gone"
+    },
+
+    "VBP": {
+        "name": "Verb - Present Tense",
+        "explanation": "Present tense mein I, you, we, they ke saath commonly use hota hai.",
+        "example": "I eat, they play"
+    },
+
+    "VBZ": {
+        "name": "Verb - 3rd Person Singular Present",
+        "explanation": "Present tense mein he, she ya it ke saath use hota hai.",
+        "example": "he eats, she runs"
+    },
+
+    "WDT": {
+        "name": "Wh-Determiner",
+        "explanation": "Question ya relative clause mein noun ko determine karta hai.",
+        "example": "which, whatever"
+    },
+
+    "WP": {
+        "name": "Wh-Pronoun",
+        "explanation": "Question mein person ya thing ke liye use hota hai.",
+        "example": "who, what"
+    },
+
+    "WP$": {
+        "name": "Possessive Wh-Pronoun",
+        "explanation": "Question mein ownership poochta hai.",
+        "example": "whose"
+    },
+
+    "WRB": {
+        "name": "Wh-Adverb",
+        "explanation": "Question mein place, time ya reason poochta hai.",
+        "example": "where, when, why"
+    }
 }
 
 
-# -----------------------------
+# =========================================================
 # SIDEBAR
-# -----------------------------
+# =========================================================
+
 with st.sidebar:
 
     st.title("📘 LexiScope")
@@ -249,13 +447,14 @@ with st.sidebar:
     st.write("⬇️ Hyponyms")
     st.write("🧠 Meanings")
     st.write("✂️ Tokenization")
-    st.write("🏷️ Parts of Speech")
+    st.write("🏷️ Detailed Parts of Speech")
     st.write("⚖️ Word Similarity")
 
 
-# -----------------------------
+# =========================================================
 # HEADER
-# -----------------------------
+# =========================================================
+
 st.markdown(
     '<div class="main-title">📚 LexiScope</div>',
     unsafe_allow_html=True
@@ -264,16 +463,17 @@ st.markdown(
 st.markdown(
     """
     <div class="subtitle">
-    Explore words and perform basic NLP analysis using NLTK
+    Explore words and perform basic NLP analysis using NLTK and WordNet
     </div>
     """,
     unsafe_allow_html=True
 )
 
 
-# -----------------------------
+# =========================================================
 # MAIN TABS
-# -----------------------------
+# =========================================================
+
 main_tabs = st.tabs([
     "📖 WordNet Explorer",
     "✂️ Tokenization",
@@ -285,6 +485,7 @@ main_tabs = st.tabs([
 # =========================================================
 # TAB 1 - WORDNET EXPLORER
 # =========================================================
+
 with main_tabs[0]:
 
     word = st.text_input(
@@ -317,6 +518,7 @@ with main_tabs[0]:
             st.markdown(
                 f"""
                 <div class="word-box">
+
                     <div style="font-size:14px; opacity:0.7;">
                         Search Result
                     </div>
@@ -328,6 +530,7 @@ with main_tabs[0]:
                     <div style="font-size:14px; opacity:0.7;">
                         {len(meanings)} meaning(s) found
                     </div>
+
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -357,6 +560,7 @@ with main_tabs[0]:
             with word_tabs[0]:
 
                 if definitions:
+
                     st.subheader("Primary Definition")
                     st.info(definitions[0])
 
@@ -370,6 +574,7 @@ with main_tabs[0]:
                         st.write(
                             ", ".join(synonyms[:10])
                         )
+
                     else:
                         st.write("No synonyms found.")
 
@@ -381,6 +586,7 @@ with main_tabs[0]:
                         st.write(
                             ", ".join(antonyms[:10])
                         )
+
                     else:
                         st.write("No antonyms found.")
 
@@ -398,13 +604,17 @@ with main_tabs[0]:
                     ):
 
                         with st.container(border=True):
+
                             st.markdown(
                                 f"**Definition {i}**"
                             )
+
                             st.write(definition)
 
                 else:
-                    st.warning("No definitions found.")
+                    st.warning(
+                        "No definitions found."
+                    )
 
 
             # EXAMPLES
@@ -420,12 +630,15 @@ with main_tabs[0]:
                     ):
 
                         with st.container(border=True):
+
                             st.markdown(
                                 f"**Example {i}**"
                             )
+
                             st.write(example)
 
                 else:
+
                     st.warning(
                         "No examples available."
                     )
@@ -442,7 +655,10 @@ with main_tabs[0]:
                         st.write("•", item)
 
                 else:
-                    st.warning("No synonyms found.")
+
+                    st.warning(
+                        "No synonyms found."
+                    )
 
 
             # ANTONYMS
@@ -456,14 +672,20 @@ with main_tabs[0]:
                         st.write("•", item)
 
                 else:
-                    st.warning("No antonyms found.")
+
+                    st.warning(
+                        "No antonyms found."
+                    )
 
 
             # HYPERNYMS
             with word_tabs[5]:
 
                 st.subheader("⬆️ Hypernyms")
-                st.caption("Broader categories")
+
+                st.caption(
+                    "Broader categories"
+                )
 
                 if hypernyms:
 
@@ -471,14 +693,20 @@ with main_tabs[0]:
                         st.write("•", item)
 
                 else:
-                    st.warning("No hypernyms found.")
+
+                    st.warning(
+                        "No hypernyms found."
+                    )
 
 
             # HYPONYMS
             with word_tabs[6]:
 
                 st.subheader("⬇️ Hyponyms")
-                st.caption("More specific categories")
+
+                st.caption(
+                    "More specific categories"
+                )
 
                 if hyponyms:
 
@@ -486,13 +714,18 @@ with main_tabs[0]:
                         st.write("•", item)
 
                 else:
-                    st.warning("No hyponyms found.")
+
+                    st.warning(
+                        "No hyponyms found."
+                    )
 
 
-            # MEANINGS
+            # DIFFERENT MEANINGS
             with word_tabs[7]:
 
-                st.subheader("🧠 Different Meanings")
+                st.subheader(
+                    "🧠 Different Meanings"
+                )
 
                 for i, meaning in enumerate(
                     meanings,
@@ -511,15 +744,27 @@ with main_tabs[0]:
 
                         if meaning["examples"]:
 
-                            st.write("**Examples:**")
+                            st.write(
+                                "**Examples:**"
+                            )
 
                             for example in meaning["examples"]:
-                                st.write("•", example)
+                                st.write(
+                                    "•",
+                                    example
+                                )
+
+                        else:
+
+                            st.caption(
+                                "No example available."
+                            )
 
 
 # =========================================================
 # TAB 2 - TOKENIZATION
 # =========================================================
+
 with main_tabs[1]:
 
     st.header("✂️ Tokenization")
@@ -533,13 +778,20 @@ with main_tabs[1]:
         placeholder="Example: Ali has 2 books and 5 pens."
     )
 
-    if st.button("Tokenize Sentence"):
+    if st.button(
+        "Tokenize Sentence",
+        key="token_button"
+    ):
 
         if sentence.strip():
 
-            tokens = nltk.word_tokenize(sentence)
+            tokens = nltk.word_tokenize(
+                sentence
+            )
 
-            st.subheader("Tokens")
+            st.subheader(
+                "Tokens"
+            )
 
             st.write(tokens)
 
@@ -556,18 +808,28 @@ with main_tabs[1]:
 
 
 # =========================================================
-# TAB 3 - PARTS OF SPEECH
+# TAB 3 - DETAILED PARTS OF SPEECH
 # =========================================================
+
 with main_tabs[2]:
 
-    st.header("🏷️ Parts of Speech Analysis")
+    st.header(
+        "🏷️ Detailed Parts of Speech Analysis"
+    )
+
+    st.write(
+        "Enter a sentence to identify and explain the part of speech of every word."
+    )
 
     pos_sentence = st.text_area(
         "Enter a sentence for POS tagging:",
         placeholder="Example: Ali is reading a beautiful book."
     )
 
-    if st.button("Analyze Parts of Speech"):
+    if st.button(
+        "Analyze Parts of Speech",
+        key="pos_button"
+    ):
 
         if pos_sentence.strip():
 
@@ -575,40 +837,102 @@ with main_tabs[2]:
                 pos_sentence
             )
 
-            tags = nltk.pos_tag(tokens)
+            tags = nltk.pos_tag(
+                tokens
+            )
 
-            st.subheader("POS Analysis")
+            st.subheader(
+                "Detailed POS Analysis"
+            )
 
             for word_item, tag in tags:
 
-                meaning = pos_meanings.get(
-                    tag,
-                    "Punctuation or special symbol"
+                information = pos_meanings.get(
+                    tag
                 )
 
-                with st.container(border=True):
+                with st.container(
+                    border=True
+                ):
 
-                    col1, col2, col3 = st.columns(
-                        [2, 1, 4]
+                    st.markdown(
+                        f"### {word_item}"
                     )
 
-                    with col1:
-                        st.write(
-                            "**Word:**",
-                            word_item
-                        )
+                    col1, col2 = st.columns(2)
 
-                    with col2:
+                    with col1:
+
                         st.write(
-                            "**Tag:**",
+                            "**POS Tag:**",
                             tag
                         )
 
-                    with col3:
+                        if information:
+
+                            st.write(
+                                "**Part of Speech:**",
+                                information["name"]
+                            )
+
+                    with col2:
+
+                        if information:
+
+                            st.write(
+                                "**Example:**",
+                                information["example"]
+                            )
+
+                    if information:
+
                         st.write(
-                            "**Meaning:**",
-                            meaning
+                            "**Explanation:**",
+                            information["explanation"]
                         )
+
+                    else:
+
+                        st.write(
+                            "**Part of Speech:** "
+                            "Punctuation / Special Symbol"
+                        )
+
+
+            # ---------------------------------
+            # SUMMARY TABLE
+            # ---------------------------------
+
+            st.subheader(
+                "POS Summary"
+            )
+
+            table_data = []
+
+            for word_item, tag in tags:
+
+                information = pos_meanings.get(
+                    tag
+                )
+
+                if information:
+
+                    name = information["name"]
+
+                else:
+
+                    name = "Punctuation / Symbol"
+
+                table_data.append({
+                    "Word": word_item,
+                    "POS Tag": tag,
+                    "Part of Speech": name
+                })
+
+            st.dataframe(
+                table_data,
+                use_container_width=True
+            )
 
         else:
 
@@ -620,29 +944,37 @@ with main_tabs[2]:
 # =========================================================
 # TAB 4 - SIMILARITY COMPARISON
 # =========================================================
+
 with main_tabs[3]:
 
-    st.header("⚖️ Word Similarity Comparison")
+    st.header(
+        "⚖️ Word Similarity Comparison"
+    )
 
     st.write(
-        "Compare the semantic similarity of two words using WordNet."
+        "Compare the semantic similarity of two words using WordNet Wu-Palmer Similarity."
     )
 
     col1, col2 = st.columns(2)
 
     with col1:
+
         word1 = st.text_input(
             "First Word",
             placeholder="Example: car"
         )
 
     with col2:
+
         word2 = st.text_input(
             "Second Word",
             placeholder="Example: bus"
         )
 
-    if st.button("Compare Similarity"):
+    if st.button(
+        "Compare Similarity",
+        key="similarity_button"
+    ):
 
         word1 = word1.strip().lower()
         word2 = word2.strip().lower()
@@ -662,26 +994,35 @@ with main_tabs[3]:
 
             else:
 
-                percentage = similarity * 100
+                percentage = (
+                    similarity * 100
+                )
 
                 st.metric(
                     "Similarity Score",
                     f"{percentage:.2f}%"
                 )
 
+                st.progress(
+                    int(percentage)
+                )
+
                 if percentage >= 80:
+
                     st.success(
                         "The words are highly similar."
                     )
 
                 elif percentage >= 50:
+
                     st.info(
                         "The words are moderately similar."
                     )
 
                 else:
+
                     st.warning(
-                        "The words have low similarity."
+                        "The words have low semantic similarity."
                     )
 
         else:
@@ -691,11 +1032,12 @@ with main_tabs[3]:
             )
 
 
-# -----------------------------
+# =========================================================
 # FOOTER
-# -----------------------------
+# =========================================================
+
 st.divider()
 
 st.caption(
-    "LexiScope | NLP Explorer | Streamlit + NLTK + WordNet"
+    "LexiScope | NLP Explorer | Built with Streamlit, NLTK and WordNet"
 )
