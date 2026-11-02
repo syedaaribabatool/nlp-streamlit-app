@@ -3,10 +3,13 @@ import nltk
 from nltk.corpus import wordnet
 
 # -----------------------------
-# SETUP
+# DOWNLOAD WORDNET
 # -----------------------------
 nltk.download("wordnet", quiet=True)
 
+# -----------------------------
+# PAGE CONFIG
+# -----------------------------
 st.set_page_config(
     page_title="LexiScope - WordNet Explorer",
     page_icon="📘",
@@ -25,7 +28,7 @@ st.markdown("""
 }
 
 .main-title {
-    font-size: 45px;
+    font-size: 44px;
     font-weight: 700;
     margin-bottom: 0px;
 }
@@ -34,40 +37,21 @@ st.markdown("""
     font-size: 17px;
     color: #6c757d;
     margin-top: 5px;
-    margin-bottom: 30px;
-}
-
-.section-title {
-    font-size: 24px;
-    font-weight: 600;
-    margin-top: 20px;
-}
-
-.info-card {
-    padding: 18px;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    background-color: #fafafa;
-    margin-bottom: 12px;
+    margin-bottom: 25px;
 }
 
 .word-box {
-    padding: 18px;
+    padding: 20px;
     border-radius: 12px;
-    background-color: #f4f6f8;
-    border-left: 5px solid #4b5563;
+    background-color: rgba(120,120,120,0.08);
+    border: 1px solid rgba(120,120,120,0.15);
     margin-top: 15px;
-}
-
-.small-text {
-    font-size: 14px;
-    color: #6c757d;
 }
 
 div.stButton > button {
     border-radius: 8px;
     height: 42px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 </style>
@@ -82,17 +66,25 @@ def get_synsets(word):
 
 
 def get_definitions(word):
-    return list(dict.fromkeys(
-        syn.definition()
-        for syn in wordnet.synsets(word)
-    ))
+    definitions = []
+
+    for syn in wordnet.synsets(word):
+        definition = syn.definition()
+
+        if definition:
+            definitions.append(definition)
+
+    return list(dict.fromkeys(definitions))
 
 
 def get_examples(word):
     examples = []
 
     for syn in wordnet.synsets(word):
-        examples.extend(syn.examples())
+        for example in syn.examples():
+
+            if example:
+                examples.append(example)
 
     return list(dict.fromkeys(examples))
 
@@ -102,9 +94,9 @@ def get_synonyms(word):
 
     for syn in wordnet.synsets(word):
         for lemma in syn.lemmas():
-            synonyms.add(
-                lemma.name().replace("_", " ")
-            )
+
+            synonym = lemma.name().replace("_", " ")
+            synonyms.add(synonym)
 
     return sorted(synonyms)
 
@@ -114,7 +106,9 @@ def get_antonyms(word):
 
     for syn in wordnet.synsets(word):
         for lemma in syn.lemmas():
+
             for antonym in lemma.antonyms():
+
                 antonyms.add(
                     antonym.name().replace("_", " ")
                 )
@@ -126,8 +120,11 @@ def get_hypernyms(word):
     hypernyms = set()
 
     for syn in wordnet.synsets(word):
+
         for hypernym in syn.hypernyms():
+
             for lemma in hypernym.lemmas():
+
                 hypernyms.add(
                     lemma.name().replace("_", " ")
                 )
@@ -139,8 +136,11 @@ def get_hyponyms(word):
     hyponyms = set()
 
     for syn in wordnet.synsets(word):
+
         for hyponym in syn.hyponyms():
+
             for lemma in hyponym.lemmas():
+
                 hyponyms.add(
                     lemma.name().replace("_", " ")
                 )
@@ -149,7 +149,7 @@ def get_hyponyms(word):
 
 
 def get_meanings(word):
-    data = []
+    meanings = []
 
     pos_names = {
         "n": "Noun",
@@ -161,16 +161,17 @@ def get_meanings(word):
 
     for syn in wordnet.synsets(word):
 
-        data.append({
+        meanings.append({
             "synset": syn.name(),
             "part_of_speech": pos_names.get(
-                syn.pos(), syn.pos()
+                syn.pos(),
+                syn.pos()
             ),
             "definition": syn.definition(),
             "examples": syn.examples()
         })
 
-    return data
+    return meanings
 
 
 # -----------------------------
@@ -178,29 +179,29 @@ def get_meanings(word):
 # -----------------------------
 with st.sidebar:
 
-    st.title("LexiScope")
+    st.title("📘 LexiScope")
 
     st.caption(
-        "A semantic word exploration tool powered by NLTK WordNet."
+        "A WordNet-based lexical and semantic exploration tool."
     )
 
     st.divider()
 
-    st.subheader("What can you explore?")
+    st.subheader("Features")
 
-    st.write("• Definitions")
-    st.write("• Example sentences")
-    st.write("• Synonyms")
-    st.write("• Antonyms")
-    st.write("• Hypernyms")
-    st.write("• Hyponyms")
-    st.write("• Multiple word meanings")
+    st.write("📘 Definitions")
+    st.write("💬 Example Sentences")
+    st.write("🔄 Synonyms")
+    st.write("↔️ Antonyms")
+    st.write("⬆️ Hypernyms")
+    st.write("⬇️ Hyponyms")
+    st.write("🧠 Different Meanings")
 
     st.divider()
 
     st.info(
-        "Tip: Try words such as "
-        "`bank`, `car`, `light`, `good`, or `run`."
+        "Try words such as: "
+        "`bank`, `car`, `run`, `good`, `light`."
     )
 
 
@@ -208,18 +209,19 @@ with st.sidebar:
 # HEADER
 # -----------------------------
 st.markdown(
-    '<div class="main-title">LexiScope</div>',
+    '<div class="main-title">📚 LexiScope</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
     """
     <div class="subtitle">
-    Professional WordNet Explorer for semantic and lexical analysis
+    Explore the meaning and semantic relationships of English words using WordNet
     </div>
     """,
     unsafe_allow_html=True
 )
+
 
 # -----------------------------
 # SEARCH AREA
@@ -227,15 +229,17 @@ st.markdown(
 search_col1, search_col2 = st.columns([5, 1])
 
 with search_col1:
+
     word = st.text_input(
-        "Search a word",
+        "Enter a word",
         placeholder="Enter an English word...",
         label_visibility="collapsed"
     )
 
 with search_col2:
+
     search_button = st.button(
-        "Search",
+        "🔍 Search",
         use_container_width=True,
         type="primary"
     )
@@ -244,7 +248,7 @@ word = word.strip().lower()
 
 
 # -----------------------------
-# PROCESS
+# MAIN APPLICATION
 # -----------------------------
 if word:
 
@@ -266,20 +270,22 @@ if word:
         hyponyms = get_hyponyms(word)
         meanings = get_meanings(word)
 
-        # -------------------------
+        # -----------------------------
         # WORD SUMMARY
-        # -------------------------
+        # -----------------------------
         st.markdown(
             f"""
             <div class="word-box">
-                <div style="font-size:14px;color:#6c757d;">
+                <div style="font-size:14px; opacity:0.7;">
                     Search Result
                 </div>
-                <div style="font-size:30px;font-weight:700;">
+
+                <div style="font-size:30px; font-weight:700;">
                     {word.title()}
                 </div>
-                <div class="small-text">
-                    Found {len(synsets)} WordNet meaning(s)
+
+                <div style="font-size:14px; opacity:0.7;">
+                    {len(meanings)} WordNet meaning(s) found
                 </div>
             </div>
             """,
@@ -288,135 +294,173 @@ if word:
 
         st.write("")
 
-        # -------------------------
-        # METRICS
-        # -------------------------
+        # -----------------------------
+        # METRIC CARDS
+        # -----------------------------
         m1, m2, m3, m4 = st.columns(4)
 
-        m1.metric(
-            "Meanings",
-            len(meanings)
-        )
+        with m1:
+            st.metric(
+                "Meanings",
+                len(meanings)
+            )
 
-        m2.metric(
-            "Synonyms",
-            len(synonyms)
-        )
+        with m2:
+            st.metric(
+                "Synonyms",
+                len(synonyms)
+            )
 
-        m3.metric(
-            "Antonyms",
-            len(antonyms)
-        )
+        with m3:
+            st.metric(
+                "Antonyms",
+                len(antonyms)
+            )
 
-        m4.metric(
-            "Examples",
-            len(examples)
-        )
+        with m4:
+            st.metric(
+                "Examples",
+                len(examples)
+            )
 
         st.write("")
 
-        # -------------------------
+        # -----------------------------
         # TABS
-        # -------------------------
+        # -----------------------------
         tabs = st.tabs([
-            "Overview",
-            "Definitions",
-            "Examples",
-            "Synonyms",
-            "Antonyms",
-            "Hypernyms",
-            "Hyponyms",
-            "Meanings"
+            "🏠 Overview",
+            "📘 Definitions",
+            "💬 Examples",
+            "🔄 Synonyms",
+            "↔️ Antonyms",
+            "⬆️ Hypernyms",
+            "⬇️ Hyponyms",
+            "🧠 Meanings"
         ])
 
-        # -------------------------
+
+        # -----------------------------
         # OVERVIEW
-        # -------------------------
+        # -----------------------------
         with tabs[0]:
 
             st.subheader("Word Overview")
 
             if definitions:
-                st.write("**Primary Definition**")
+
+                st.markdown("#### Primary Definition")
                 st.info(definitions[0])
 
             col1, col2 = st.columns(2)
 
             with col1:
 
-                st.write("**Synonyms**")
+                st.markdown("#### Synonyms")
 
                 if synonyms:
-                    st.write(", ".join(synonyms[:10]))
+
+                    st.write(
+                        ", ".join(synonyms[:10])
+                    )
 
                 else:
-                    st.caption("No synonyms found.")
+
+                    st.caption(
+                        "No synonyms available."
+                    )
 
             with col2:
 
-                st.write("**Antonyms**")
+                st.markdown("#### Antonyms")
 
                 if antonyms:
-                    st.write(", ".join(antonyms[:10]))
+
+                    st.write(
+                        ", ".join(antonyms[:10])
+                    )
 
                 else:
-                    st.caption("No antonyms found.")
 
-        # -------------------------
-        # DEFINITIONS
-        # -------------------------
+                    st.caption(
+                        "No antonyms available."
+                    )
+
+
+        # -----------------------------
+        # DEFINITIONS - FIXED
+        # -----------------------------
         with tabs[1]:
 
-            st.subheader("Definitions")
+            st.subheader("📘 Definitions")
 
-            for i, definition in enumerate(
-                definitions, start=1
-            ):
+            st.caption(
+                f"Definitions available for '{word}'"
+            )
 
-                st.markdown(
-                    f"""
-                    <div class="info-card">
-                    <b>Definition {i}</b><br><br>
-                    {definition}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
+            if definitions:
+
+                for i, definition in enumerate(
+                    definitions,
+                    start=1
+                ):
+
+                    with st.container(border=True):
+
+                        st.markdown(
+                            f"**Definition {i}**"
+                        )
+
+                        st.write(definition)
+
+            else:
+
+                st.warning(
+                    "No definitions were found."
                 )
 
-        # -------------------------
-        # EXAMPLES
-        # -------------------------
+
+        # -----------------------------
+        # EXAMPLES - FIXED
+        # -----------------------------
         with tabs[2]:
 
-            st.subheader("Example Sentences")
+            st.subheader("💬 Example Sentences")
+
+            st.caption(
+                f"Examples available for '{word}'"
+            )
 
             if examples:
 
                 for i, example in enumerate(
-                    examples, start=1
+                    examples,
+                    start=1
                 ):
-                    st.markdown(
-                        f"""
-                        <div class="info-card">
-                        <b>Example {i}</b><br>
-                        "{example}"
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+
+                    with st.container(border=True):
+
+                        st.markdown(
+                            f"**Example {i}**"
+                        )
+
+                        st.write(
+                            f'"{example}"'
+                        )
 
             else:
 
-                st.info(
-                    "No example sentences are available."
+                st.warning(
+                    "WordNet does not provide example sentences for this word."
                 )
 
-        # -------------------------
+
+        # -----------------------------
         # SYNONYMS
-        # -------------------------
+        # -----------------------------
         with tabs[3]:
 
-            st.subheader("Synonyms")
+            st.subheader("🔄 Synonyms")
 
             st.caption(
                 "Words with similar meanings."
@@ -425,17 +469,28 @@ if word:
             if synonyms:
 
                 for synonym in synonyms:
-                    st.write("•", synonym)
+
+                    st.write(
+                        "•", synonym
+                    )
+
+                st.success(
+                    f"{len(synonyms)} synonym(s) found."
+                )
 
             else:
-                st.info("No synonyms found.")
 
-        # -------------------------
+                st.warning(
+                    "No synonyms found."
+                )
+
+
+        # -----------------------------
         # ANTONYMS
-        # -------------------------
+        # -----------------------------
         with tabs[4]:
 
-            st.subheader("Antonyms")
+            st.subheader("↔️ Antonyms")
 
             st.caption(
                 "Words with opposite meanings."
@@ -444,82 +499,131 @@ if word:
             if antonyms:
 
                 for antonym in antonyms:
-                    st.write("•", antonym)
+
+                    st.write(
+                        "•", antonym
+                    )
+
+                st.success(
+                    f"{len(antonyms)} antonym(s) found."
+                )
 
             else:
-                st.info("No antonyms found.")
 
-        # -------------------------
+                st.warning(
+                    "No antonyms are available for this word."
+                )
+
+
+        # -----------------------------
         # HYPERNYMS
-        # -------------------------
+        # -----------------------------
         with tabs[5]:
 
-            st.subheader("Hypernyms")
+            st.subheader("⬆️ Hypernyms")
 
             st.caption(
-                "Broader or more general categories."
+                "Hypernyms are broader or more general categories."
             )
 
             if hypernyms:
 
                 for item in hypernyms:
-                    st.write("•", item)
+
+                    st.write(
+                        "•", item
+                    )
 
             else:
-                st.info("No hypernyms found.")
 
-        # -------------------------
+                st.warning(
+                    "No hypernyms found."
+                )
+
+
+        # -----------------------------
         # HYPONYMS
-        # -------------------------
+        # -----------------------------
         with tabs[6]:
 
-            st.subheader("Hyponyms")
+            st.subheader("⬇️ Hyponyms")
 
             st.caption(
-                "More specific words or subcategories."
+                "Hyponyms are more specific words or subcategories."
             )
 
             if hyponyms:
 
                 for item in hyponyms:
-                    st.write("•", item)
+
+                    st.write(
+                        "•", item
+                    )
 
             else:
-                st.info("No hyponyms found.")
 
-        # -------------------------
+                st.warning(
+                    "No hyponyms found."
+                )
+
+
+        # -----------------------------
         # DIFFERENT MEANINGS
-        # -------------------------
+        # -----------------------------
         with tabs[7]:
 
-            st.subheader("Different Meanings")
+            st.subheader(
+                "🧠 Different Meanings"
+            )
+
+            st.caption(
+                "A word can have multiple meanings depending on context."
+            )
 
             for i, meaning in enumerate(
-                meanings, start=1
+                meanings,
+                start=1
             ):
 
                 with st.expander(
-                    f"{i}. {meaning['part_of_speech']} — "
-                    f"{meaning['synset']}"
+                    f"Meaning {i} — "
+                    f"{meaning['part_of_speech']} "
+                    f"({meaning['synset']})"
                 ):
 
+                    st.markdown(
+                        "**Definition**"
+                    )
+
                     st.write(
-                        "**Definition:**",
                         meaning["definition"]
                     )
 
                     if meaning["examples"]:
 
-                        st.write("**Examples:**")
+                        st.markdown(
+                            "**Examples**"
+                        )
 
                         for example in meaning["examples"]:
-                            st.write("•", example)
+
+                            st.write(
+                                "•", example
+                            )
+
+                    else:
+
+                        st.caption(
+                            "No example available for this meaning."
+                        )
+
 
 else:
 
     st.info(
-        "Enter an English word above to begin exploring WordNet."
+        "👆 Enter an English word above to start exploring."
     )
+
 
 # -----------------------------
 # FOOTER
@@ -527,5 +631,5 @@ else:
 st.divider()
 
 st.caption(
-    "LexiScope • WordNet Explorer • Built using Streamlit and NLTK"
+    "LexiScope | WordNet Explorer | Built with Streamlit + NLTK"
 )
