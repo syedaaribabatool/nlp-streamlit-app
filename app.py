@@ -1,62 +1,313 @@
 import streamlit as st
 import nltk
-from nltk.tokenize import word_tokenize
 from nltk.corpus import wordnet
 
-nltk.download("punkt")
-nltk.download("punkt_tab")
+# Download WordNet
 nltk.download("wordnet")
 
-st.title("NLP Web Application")
-
-sentence = st.text_input("Enter desired sentence:")
-
-operation = st.selectbox(
-    "Select NLP Operation",
-    ["Tokenization", "Synonym", "Antonym"]
+# Page settings
+st.set_page_config(
+    page_title="WordNet Explorer",
+    page_icon="📖",
+    layout="centered"
 )
 
-if st.button("Process"):
+# Title
+st.title("📖 WordNet Explorer")
+st.write("Enter an English word and select what you want to explore.")
 
-    if sentence == "":
-        st.warning("Please enter a sentence.")
+# Input word
+word = st.text_input("Enter a word:", placeholder="e.g. car, happy, bank")
 
-    elif operation == "Tokenization":
-        tokens = word_tokenize(sentence)
-        st.subheader("Tokens")
-        st.write(tokens)
+# -----------------------------
+# FUNCTIONS
+# -----------------------------
 
-    elif operation == "Synonym":
-        words = word_tokenize(sentence)
+def get_definitions(word):
+    definitions = []
 
-        st.subheader("Synonyms")
+    for syn in wordnet.synsets(word):
+        definitions.append(syn.definition())
 
-        for word in words:
-            synonyms = set()
+    return definitions
 
-            for syn in wordnet.synsets(word):
-                for lemma in syn.lemmas():
-                    synonyms.add(lemma.name())
+
+def get_examples(word):
+    examples = set()
+
+    for syn in wordnet.synsets(word):
+        for example in syn.examples():
+            examples.add(example)
+
+    return sorted(examples)
+
+
+def get_synonyms(word):
+    synonyms = set()
+
+    for syn in wordnet.synsets(word):
+        for lemma in syn.lemmas():
+            synonyms.add(
+                lemma.name().replace("_", " ")
+            )
+
+    return sorted(synonyms)
+
+
+def get_antonyms(word):
+    antonyms = set()
+
+    for syn in wordnet.synsets(word):
+        for lemma in syn.lemmas():
+            for antonym in lemma.antonyms():
+                antonyms.add(
+                    antonym.name().replace("_", " ")
+                )
+
+    return sorted(antonyms)
+
+
+def get_hypernyms(word):
+    hypernyms = set()
+
+    for syn in wordnet.synsets(word):
+        for hypernym in syn.hypernyms():
+            for lemma in hypernym.lemmas():
+                hypernyms.add(
+                    lemma.name().replace("_", " ")
+                )
+
+    return sorted(hypernyms)
+
+
+def get_hyponyms(word):
+    hyponyms = set()
+
+    for syn in wordnet.synsets(word):
+        for hyponym in syn.hyponyms():
+            for lemma in hyponym.lemmas():
+                hyponyms.add(
+                    lemma.name().replace("_", " ")
+                )
+
+    return sorted(hyponyms)
+
+
+def get_meanings(word):
+    meanings = []
+
+    for syn in wordnet.synsets(word):
+        meanings.append(
+            f"{syn.name()} → {syn.definition()}"
+        )
+
+    return meanings
+
+
+# -----------------------------
+# BUTTONS
+# -----------------------------
+
+col1, col2 = st.columns(2)
+
+with col1:
+    definition_button = st.button(
+        "📘 Definition",
+        use_container_width=True
+    )
+
+with col2:
+    example_button = st.button(
+        "💬 Examples",
+        use_container_width=True
+    )
+
+
+col3, col4 = st.columns(2)
+
+with col3:
+    synonym_button = st.button(
+        "🔄 Synonyms",
+        use_container_width=True
+    )
+
+with col4:
+    antonym_button = st.button(
+        "↔️ Antonyms",
+        use_container_width=True
+    )
+
+
+col5, col6 = st.columns(2)
+
+with col5:
+    hypernym_button = st.button(
+        "⬆️ Hypernyms",
+        use_container_width=True
+    )
+
+with col6:
+    hyponym_button = st.button(
+        "⬇️ Hyponyms",
+        use_container_width=True
+    )
+
+
+meaning_button = st.button(
+    "🧠 Different Meanings",
+    use_container_width=True
+)
+
+
+# -----------------------------
+# CHECK WORD
+# -----------------------------
+
+if word:
+
+    synsets = wordnet.synsets(word)
+
+    if not synsets:
+
+        st.error("Word not found in WordNet.")
+
+    else:
+
+        # Definition
+        if definition_button:
+
+            st.subheader("📘 Definitions")
+
+            definitions = get_definitions(word)
+
+            for i, definition in enumerate(
+                definitions, 1
+            ):
+                st.write(
+                    f"{i}. {definition}"
+                )
+
+
+        # Examples
+        if example_button:
+
+            st.subheader("💬 Examples")
+
+            examples = get_examples(word)
+
+            if examples:
+
+                for example in examples:
+                    st.write("•", example)
+
+            else:
+                st.info(
+                    "No examples available."
+                )
+
+
+        # Synonyms
+        if synonym_button:
+
+            st.subheader("🔄 Synonyms")
+
+            synonyms = get_synonyms(word)
 
             if synonyms:
-                st.write(f"{word}: {list(synonyms)[:5]}")
+
+                for synonym in synonyms:
+                    st.write("•", synonym)
+
             else:
-                st.write(f"{word}: No synonym found")
+                st.info(
+                    "No synonyms found."
+                )
 
-    elif operation == "Antonym":
-        words = word_tokenize(sentence)
 
-        st.subheader("Antonyms")
+        # Antonyms
+        if antonym_button:
 
-        for word in words:
-            antonyms = set()
+            st.subheader("↔️ Antonyms")
 
-            for syn in wordnet.synsets(word):
-                for lemma in syn.lemmas():
-                    for antonym in lemma.antonyms():
-                        antonyms.add(antonym.name())
+            antonyms = get_antonyms(word)
 
             if antonyms:
-                st.write(f"{word}: {list(antonyms)}")
+
+                for antonym in antonyms:
+                    st.write("•", antonym)
+
             else:
-                st.write(f"{word}: No antonym found")
+                st.info(
+                    "No antonyms found."
+                )
+
+
+        # Hypernyms
+        if hypernym_button:
+
+            st.subheader("⬆️ Hypernyms")
+
+            st.write(
+                "Broader categories:"
+            )
+
+            hypernyms = get_hypernyms(word)
+
+            if hypernyms:
+
+                for hypernym in hypernyms:
+                    st.write(
+                        "•", hypernym
+                    )
+
+            else:
+                st.info(
+                    "No hypernyms found."
+                )
+
+
+        # Hyponyms
+        if hyponym_button:
+
+            st.subheader("⬇️ Hyponyms")
+
+            st.write(
+                "More specific words:"
+            )
+
+            hyponyms = get_hyponyms(word)
+
+            if hyponyms:
+
+                for hyponym in hyponyms:
+                    st.write(
+                        "•", hyponym
+                    )
+
+            else:
+                st.info(
+                    "No hyponyms found."
+                )
+
+
+        # Different Meanings
+        if meaning_button:
+
+            st.subheader(
+                "🧠 Different Meanings"
+            )
+
+            meanings = get_meanings(word)
+
+            for i, meaning in enumerate(
+                meanings, 1
+            ):
+                st.write(
+                    f"{i}. {meaning}"
+                )
+
+else:
+
+    st.info(
+        "Enter a word first, then click any button."
+    )
