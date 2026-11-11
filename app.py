@@ -530,7 +530,7 @@ def get_wordnet_details(word, tag):
 
 with st.sidebar:
 
-    st.title("📘 LexiScope")
+    st.title("📘 NexaLingo")
 
     st.caption(
         "WordNet and NLP exploration tool."
@@ -557,16 +557,7 @@ with st.sidebar:
 # =========================================================
 
 st.markdown(
-    '<div class="main-title">📚 LexiScope</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <div class="subtitle">
-    Explore English words and perform NLP analysis using NLTK and WordNet
-    </div>
-    """,
+    '<div class="main-title">📚 NexaLingo</div>',
     unsafe_allow_html=True
 )
 
