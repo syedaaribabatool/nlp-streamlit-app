@@ -15,7 +15,7 @@ nltk.download("averaged_perceptron_tagger_eng", quiet=True)
 # PAGE CONFIG
 # =========================================================
 st.set_page_config(
-    page_title="LexiScope - NLP Explorer",
+    page_title="NexaLingo",
     page_icon="📘",
     layout="wide"
 )
